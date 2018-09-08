@@ -38,42 +38,41 @@ import org.json.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class SecondActivity extends AppCompatActivity implements LocationListener {
-    public int total = 51567;
-    public int iterations = 0;
-    public List<Point> x = new ArrayList<Point>();
-    final String TAG = "GPS";
-
+    private int total = 51567;
+    private int iterations = 0;
+    private List<Point> x = new ArrayList<Point>();
+    private final String TAG = "GPS";
+    private String googleMapsLink = "https://www.google.com/maps/dir/?api=1&origin=";
 
     //double maxPrice = Double.parseDouble(max);
-    public double totalPrice = 0;
-    public double totalDistance = 0;
+    private double totalPrice = 0;
+    private double totalDistance = 0;
     private final static int ALL_PERMISSIONS_RESULT = 101;
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    TextView tvLatitude, tvLongitude, tvTime;
-    LocationManager locationManager;
-    Location loc;
-    ArrayList<String> permissions = new ArrayList<>();
-    ArrayList<String> permissionsToRequest;
-    ArrayList<String> permissionsRejected = new ArrayList<>();
-    boolean isGPS = false;
-    boolean isNetwork = false;
-    boolean canGetLocation = true;
-    String longitude = "";
-    String latitude = "";
-    double maxValue = 1000000;
-    double maxValueOverall = 1000000;
-    File sdcard = Environment.getExternalStorageDirectory();
+    private TextView tvLatitude, tvLongitude, tvTime;
+    private LocationManager locationManager;
+    private Location loc;
+    private ArrayList<String> permissions = new ArrayList<>();
+    private ArrayList<String> permissionsToRequest;
+    private ArrayList<String> permissionsRejected = new ArrayList<>();
+    private boolean isGPS = false;
+    private boolean isNetwork = false;
+    private boolean canGetLocation = true;
+    private String longitude = "";
+    private String latitude = "";
+    private double maxValue = 1000000;
+    private double maxValueOverall = 1000000;
+    private File sdcard = Environment.getExternalStorageDirectory();
 
     /*@Override
     public void onRestart(){
@@ -90,8 +89,6 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
     public void assignGoogle(String google) {
         googleMapsLink = google;
     }
-
-    public String googleMapsLink = "https://www.google.com/maps/dir/?api=1&origin=";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,13 +127,11 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
         } else {
             Log.d(TAG, "Connection on");
             // check permissions
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (permissionsToRequest.size() > 0) {
-                    requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]),
-                            ALL_PERMISSIONS_RESULT);
-                    Log.d(TAG, "Permission requests");
-                    canGetLocation = false;
-                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && permissionsToRequest.size() > 0) {
+                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]),
+                        ALL_PERMISSIONS_RESULT);
+                Log.d(TAG, "Permission requests");
+                canGetLocation = false;
             }
 
             // get location
@@ -146,8 +141,7 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
 
             RequestQueue queue = Volley.newRequestQueue(this);
             String url = "http://api.postcodes.io/postcodes/" + postcode;
-            if (postcode.equals("use_the_device_loc")) {
-
+            if ("use_the_device_loc".equals(postcode)) {
 
                 List<Point> p1 = new ArrayList<Point>();
                 Scanner scanner = null;
@@ -226,7 +220,7 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
                                     e.printStackTrace();
                                 }
 
-                                if (isValid != "200") {
+                                if (isValid.equals("200")) {
 
                                     try {
                                         longitude = obj.getJSONObject("result").getString("longitude");
@@ -473,51 +467,48 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
             double smallest = 10000000;
             int arrayindex = 0;
             for (int index = 0; index < total; index++) {
-                if (pubs.get(index).getPrice() > maxValue) {
+                if (pubs.get(index).getPrice() <= maxValue) {
+                    {
+                        if ((findDistance(v.getX(), v.getY(), pubs.get(index).getX(), pubs.get(index).getY())) < smallest) {
+                            smallest = (findDistance(v.getX(), v.getY(), pubs.get(index).getX(), pubs.get(index).getY()));
+                            arrayindex = index;
+                        }
+                        p1.get(index).setKey(findDistance(v.getX(), v.getY(), pubs.get(index).getX(), pubs.get(index).getY()));
 
+                    }
+                }
+                totalDistance += p1.get(arrayindex).getKey();
+                totalPrice += p1.get(arrayindex).getPrice();
+                x.add(p1.get(arrayindex));
+                x.get(iterations).setKey(p1.get(arrayindex).getKey());
+                p1.remove(arrayindex);
+                total--;
+                if (iterations == numofpubs - 1) {
+                    return x;
                 } else {
-                    if ((findDistance(v.getX(), v.getY(), pubs.get(index).getX(), pubs.get(index).getY())) < smallest) {
-                        smallest = (findDistance(v.getX(), v.getY(), pubs.get(index).getX(), pubs.get(index).getY()));
-                        arrayindex = index;
-                    }
-                    p1.get(index).setKey(findDistance(v.getX(), v.getY(), pubs.get(index).getX(), pubs.get(index).getY()));
-
-
+                    iterations++;
+                    findRoute(p1, x.get(iterations - 1), numofpubs, p1);
                 }
+                //}
             }
-            totalDistance += p1.get(arrayindex).getKey();
-            totalPrice += p1.get(arrayindex).getPrice();
-            x.add(p1.get(arrayindex));
-            x.get(iterations).setKey(p1.get(arrayindex).getKey());
-            p1.remove(arrayindex);
-            total--;
-            if (iterations == numofpubs - 1) {
-                return x;
-            } else {
-                iterations++;
-                findRoute(p1, x.get(iterations - 1), numofpubs, p1);
-            }
-            //}
+            return null;
         }
-        return null;
-    }
 
 
-    @TargetApi(Build.VERSION_CODES.M)
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case ALL_PERMISSIONS_RESULT:
-                Log.d(TAG, "onRequestPermissionsResult");
-                for (String perms : permissionsToRequest) {
-                    if (!hasPermission(perms)) {
-                        permissionsRejected.add(perms);
+        @TargetApi(Build.VERSION_CODES.M)
+        @Override
+        public void onRequestPermissionsResult ( int requestCode, String[] permissions,int[] grantResults){
+            switch (requestCode) {
+                case ALL_PERMISSIONS_RESULT:
+                    Log.d(TAG, "onRequestPermissionsResult");
+                    for (String perms : permissionsToRequest) {
+                        if (!hasPermission(perms)) {
+                            permissionsRejected.add(perms);
+                        }
                     }
-                }
 
-                if (permissionsRejected.size() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
+                    if (permissionsRejected.size() > 0) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
                             showMessageOKCancel("These permissions are mandatory for the application. Please allow access.",
                                     new DialogInterface.OnClickListener() {
                                         @Override
@@ -529,61 +520,63 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
                                         }
                                     });
                             return;
+
                         }
+                    } else {
+                        Log.d(TAG, "No rejected permissions.");
+                        canGetLocation = true;
+                        getLocation();
                     }
-                } else {
-                    Log.d(TAG, "No rejected permissions.");
-                    canGetLocation = true;
-                    getLocation();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void showSettingsAlert () {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+            alertDialog.setTitle("GPS is not Enabled!");
+            alertDialog.setMessage("Do you want to turn on GPS?");
+            alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
                 }
-                break;
+            });
+
+            alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            alertDialog.show();
+        }
+
+        private void showMessageOKCancel (String message, DialogInterface.OnClickListener okListener){
+            new AlertDialog.Builder(SecondActivity.this)
+                    .setMessage(message)
+                    .setPositiveButton("OK", okListener)
+                    .setNegativeButton("Cancel", null)
+                    .create()
+                    .show();
+        }
+
+        private void updateUI (Location loc){
+            Log.d(TAG, "updateUI");
+            longitude = Double.toString(loc.getLongitude());
+            latitude = Double.toString(loc.getLatitude());
+            //  tvLatitude.setText(Double.toString(loc.getLatitude()));
+            // tvLongitude.setText(Double.toString(loc.getLongitude()));
+
+            // tvTime.setText(DateFormat.getTimeInstance().format(loc.getTime()));
+        }
+
+        @Override
+        protected void onDestroy () {
+            super.onDestroy();
+            if (locationManager != null) {
+                locationManager.removeUpdates(this);
+            }
         }
     }
-
-    public void showSettingsAlert() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        alertDialog.setTitle("GPS is not Enabled!");
-        alertDialog.setMessage("Do you want to turn on GPS?");
-        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        });
-
-        alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        alertDialog.show();
-    }
-
-    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(SecondActivity.this)
-                .setMessage(message)
-                .setPositiveButton("OK", okListener)
-                .setNegativeButton("Cancel", null)
-                .create()
-                .show();
-    }
-
-    private void updateUI(Location loc) {
-        Log.d(TAG, "updateUI");
-        longitude = Double.toString(loc.getLongitude());
-        latitude = Double.toString(loc.getLatitude());
-        //  tvLatitude.setText(Double.toString(loc.getLatitude()));
-        // tvLongitude.setText(Double.toString(loc.getLongitude()));
-
-        // tvTime.setText(DateFormat.getTimeInstance().format(loc.getTime()));
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (locationManager != null) {
-            locationManager.removeUpdates(this);
-        }
-    }
-}

@@ -3,7 +3,6 @@ package uk.co.squaredsoftware.barcrawler;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.View.OnClickListener;
 import android.view.View;
 import android.widget.Button;
@@ -11,19 +10,9 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class MainActivity extends AppCompatActivity {
-    Button button;
-    CheckBox check;
+    private Button button;
+    private CheckBox check;
 
     @Override
     public void onRestart() {
@@ -87,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 final String poststring = postcode.getText().toString();
                 CheckBox checkBox = (CheckBox) findViewById(R.id.checkBox);
-                if (poststring.length() < 1 && checkBox.isChecked() != true) {
+                if (poststring.length() < 1 && !checkBox.isChecked()) {
                     Toast toast4 = Toast.makeText(getApplicationContext(),
                             "You need to enter a postcode.", Toast.LENGTH_SHORT);
                     toast4.show();

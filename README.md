@@ -1,3 +1,5 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dd4c04ec88d74aa79896d1942f1fb1f7)](https://www.codacy.com/app/sam-littlefair/BarCrawler?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sam-littlefair/BarCrawler&amp;utm_campaign=Badge_Grade)
+
 # BarCrawler
 Android app to generate bar crawls based on location and budged - GreatUniHack 2017 project
 
